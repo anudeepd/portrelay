@@ -1,0 +1,42 @@
+[package]
+name = "portrelay"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.82"
+description = "High-performance protocol-agnostic TCP relay"
+license = "MIT"
+readme = "README.md"
+keywords = ["tcp", "proxy", "relay", "networking"]
+homepage = "https://github.com/anudeepd/portrelay"
+repository = "https://github.com/anudeepd/portrelay"
+documentation = "https://github.com/anudeepd/portrelay#readme"
+categories = ["command-line-utilities", "network-programming"]
+
+[dependencies]
+anyhow = "1.0"
+arc-swap = "1.7"
+clap = { version = "4.5", features = ["derive", "env"] }
+humantime = "2.2"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+rustls-pki-types = "1.15"
+serde = { version = "1.0", features = ["derive"] }
+socket2 = { version = "0.6", features = ["all"] }
+subtle = "2.6"
+thiserror = "2.0"
+tokio = { version = "1.43", features = ["macros", "net", "io-util", "rt-multi-thread", "signal", "sync", "time"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
+tokio-util = { version = "0.7", features = ["rt"] }
+toml = "0.8"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+nix = { version = "0.30", default-features = false, features = ["fs", "socket", "zerocopy"] }
+
+[dev-dependencies]
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = true

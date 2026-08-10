@@ -1,0 +1,21 @@
+[Unit]
+Description=portrelay TCP relay
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=portrelay
+RuntimeDirectory=portrelay
+Group=portrelay
+ExecStart=/usr/local/bin/portrelay serve --config /etc/portrelay/portrelay.toml
+Restart=on-failure
+RestartSec=2
+LimitNOFILE=500000
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/run/portrelay
+
+[Install]
+WantedBy=multi-user.target

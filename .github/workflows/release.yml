@@ -1,0 +1,104 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }} wheel
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            manylinux: "2014"
+          - name: linux-aarch64
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            manylinux: "2_28"
+          - name: macos-x86_64
+            os: macos-15-intel
+            target: x86_64-apple-darwin
+            manylinux: "off"
+          - name: macos-arm64
+            os: macos-15
+            target: aarch64-apple-darwin
+            manylinux: "off"
+          - name: windows-x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            manylinux: "off"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up QEMU for Linux ARM64
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+      - uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
+        with:
+          command: build
+          maturin-version: v1.14.1
+          target: ${{ matrix.target }}
+          args: --release --locked --bindings bin --compatibility pypi --out dist
+          manylinux: ${{ matrix.manylinux }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+      - name: Validate wheel archive
+        run: >-
+          python -c "import glob, zipfile; files = glob.glob('dist/*.whl'); assert files; assert all(zipfile.ZipFile(path).testzip() is None for path in files)"
+      - name: Install and smoke-test wheel
+        if: matrix.target != 'aarch64-unknown-linux-gnu'
+        run: python scripts/verify_wheel.py dist
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: portrelay-${{ matrix.name }}
+          path: dist/*.whl
+
+  source:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
+        with:
+          command: sdist
+          maturin-version: v1.14.1
+          args: --out dist
+          manylinux: "off"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: portrelay-sdist
+          path: dist/*.tar.gz
+
+  publish:
+    name: Publish distributions to PyPI
+    needs: [build, source]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/portrelay
+    permissions:
+      id-token: write
+    steps:
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: portrelay-*
+          path: dist
+          merge-multiple: true
+      - name: List release artifacts
+        run: find dist -maxdepth 1 -type f \( -name '*.whl' -o -name '*.tar.gz' \) -print
+      - name: Publish to PyPI with Trusted Publishing
+        run: uv publish

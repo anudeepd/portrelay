@@ -1,0 +1,29 @@
+[build-system]
+requires = ["maturin>=1.8,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "portrelay"
+dynamic = ["version"]
+description = "High-performance protocol-agnostic TCP relay"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+keywords = ["tcp", "proxy", "relay", "networking"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Rust",
+    "Topic :: System :: Networking",
+]
+
+[project.urls]
+Homepage = "https://github.com/anudeepd/portrelay"
+Repository = "https://github.com/anudeepd/portrelay"
+Issues = "https://github.com/anudeepd/portrelay/issues"
+
+[tool.maturin]
+bindings = "bin"
+strip = true
