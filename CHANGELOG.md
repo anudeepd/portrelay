@@ -10,7 +10,6 @@
 - Local forwarding, routing, failure, timeout, shutdown, and concurrency tests.
 - Explicit TCP listener backlog via socket2.
 - 100,000-connection sharded loopback load harness with simultaneous-connection barrier.
-
 - Standalone echo target and external load-generator tools for relay-capacity validation.
 - External-process benchmark procedure and measured native-CLI results.
 - Sustained multi-round traffic, idle-hold, connection-churn, failure-isolation, and controlled-backpressure load modes.
