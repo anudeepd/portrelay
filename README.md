@@ -12,7 +12,7 @@ Version: `0.1.0`.
 
 ## Install
 
-After a release is published:
+Install the published release from PyPI:
 
 ```bash
 pip install portrelay
@@ -48,7 +48,9 @@ python3 -m venv .venv
 .venv/bin/portrelay --version
 ```
 
-Release Linux wheels are built from a manylinux2014/glibc 2.17 baseline. See [deployment](docs/deployment.md) for RHEL 8 requirements and release-wheel commands.
+Release Linux wheels use manylinux2014/glibc 2.17 on x86_64 and
+manylinux_2_28/glibc 2.28 on ARM64. See [deployment](docs/deployment.md) for
+RHEL 8 requirements and release-wheel commands.
 
 ## Single relay
 
@@ -91,7 +93,7 @@ Supported `serve` options:
 | `--buffer-size BYTES` | Per-direction Tokio copy buffer size. |
 | `--buffer-pool-size NUMBER` | Maximum pooled copy buffers per relay. |
 | `--connection-log-sample-rate NUMBER` | Emit connection debug logs for every Nth connection. |
-| `--forward-mode auto\|tokio\|splice` | Forwarding backend; `splice` is Linux-only and opt-in. |
+| `--forward-mode auto|tokio|splice` | Forwarding backend; `splice` is Linux-only and opt-in. |
 | `--reuse-port` | Enable Unix `SO_REUSEPORT` for multi-process listeners. |
 | `--metrics-listen HOST:PORT` | Optional Prometheus HTTP or HTTPS endpoint. |
 | `--metrics-token TOKEN` | Require bearer token for metrics requests. |
@@ -252,11 +254,9 @@ Run 100, 1,000, 10,000, 50,000, and 100,000 only when the host has enough file d
 
 See [docs/deployment.md](docs/deployment.md) and the unprivileged [user-level systemd template](systemd/user/portrelay@.service). Do not let the application change kernel-wide settings automatically. Capacity planning must include file descriptors, two sockets per connection, listen backlog, TCP buffers, keepalive, TIME_WAIT, ephemeral ports, conntrack, memory, CPU, and NIC bandwidth.
 
-## Known limitations and release status
+## Known limitations
 - `auto` uses bounded Tokio stream copy; explicit Linux `splice` is available but not assumed faster.
 - DNS target changes are refreshed only when `dns_refresh` is configured; otherwise each connection uses normal OS/Tokio resolution behavior.
 - Metrics are plain HTTP unless TLS and/or bearer authentication are configured; bind unauthenticated metrics to loopback or protect them at the network boundary.
 - Per-connection debug logs are sampled by `connection_log_sample_rate`; `info` remains the default.
 - A single instance is not promised to support one million connections; horizontal scaling and OS tuning remain deployment responsibilities.
-
-Before public PyPI release: run manylinux2014 builds on clean release workers, verify all wheel installs, review dependency advisories, test RHEL 8, choose a repository URL and maintainers, configure PyPI Trusted Publishing, publish signed release notes, and measure representative workloads on target hardware.
