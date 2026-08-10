@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 - 2026-08-10
+
+- Corrected published README and release documentation.
+- Excluded version tags from generic CI to avoid duplicate runs.
+- Added native Linux ARM64 wheel smoke testing to release builds.
+
 ## 0.1.0 - 2026-08-10
 
 - Initial protocol-agnostic asynchronous TCP relay.

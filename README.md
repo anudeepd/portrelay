@@ -8,7 +8,7 @@ client TCP stream -> portrelay listener -> configured target TCP stream
 
 It forwards bytes without parsing, buffering whole messages, terminating TLS, or understanding SSH, databases, HTTP, SMTP, Redis, or custom protocols.
 
-Version: `0.1.0`.
+Version: `0.1.1`.
 
 ## Install
 
